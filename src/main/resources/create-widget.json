@@ -1,0 +1,16 @@
+{
+  "widgetCreationInfo": {
+    "name": "to do",
+    "widgetCompletionInfo": {
+      "url": "https://localhost:8080/done"
+    },
+    "fileInfos": [{
+      "documentURL": {
+        "name": "test document api",
+        "url": "http://www.irs.gov/pub/irs-pdf/fw9.pdf",
+        "mimeType": "application/pdf"
+      }
+    }],
+    "signatureFlow": "SENDER_SIGNATURE_NOT_REQUIRED"
+  }
+}
