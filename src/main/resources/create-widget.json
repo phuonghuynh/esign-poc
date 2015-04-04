@@ -10,7 +10,6 @@
         "url": "http://www.irs.gov/pub/irs-pdf/fw9.pdf",
         "mimeType": "application/pdf"
       }
-    }],
-    "signatureFlow": "SENDER_SIGNATURE_NOT_REQUIRED"
+    }]
   }
 }

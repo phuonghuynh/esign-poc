@@ -42,11 +42,19 @@ app.config(["$routeProvider", "$authProvider", "$httpProvider",
       });
   }]);
 
-app.factory("appService", function($window, $http) {
+app.factory("appService", function ($window, $http) {
   var instance = {
-    getWidgetUrl: function(token, $scope) {
-      $http.post("url", {token: token}).success(function(data){
+    getWidgetUrl: function (token, $scope) {
+      $http.post("url", {token: token}).success(function (data) {
         $scope.widgetUrl = data.widgetUrl;
+      });
+    },
+
+    createDocusignEnvelop: function ($scope) {
+      $http.get("docusign/createEnvelope").success(function (data) {
+        $("#docusign").attr("src", data.widgetUrl);
+        //$scope.widgetUrl = $sce.getTrustedResourceUrl( data.widgetUrl );
+        //console.log($scope.widgetUrl);
       });
     }
   };
@@ -54,8 +62,12 @@ app.factory("appService", function($window, $http) {
   return instance;
 });
 
-app.controller("AppController", function($scope, $auth, $window, appService) {
-  $scope.createWidget = function() {
+app.controller("AppController", function ($scope, $auth, $window, appService, $sce) {
+  appService.createDocusignEnvelop($scope);
+
+  //$scope.videos = $sce.getTrustedResourceUrl('https://demo.docusign.net/Member/');
+
+  $scope.createWidget = function () {
     $auth.authenticate("esign")
       .then(function (resp) {
         var token = $window.localStorage["satellizer_token"];

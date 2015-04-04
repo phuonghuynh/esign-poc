@@ -1,0 +1,162 @@
+package com.phuonghuynh.controller;
+
+import com.mashape.unirest.http.JsonNode;
+import com.mashape.unirest.http.Unirest;
+import com.mashape.unirest.http.exceptions.UnirestException;
+import com.phuonghuynh.dto.SocialReqResp;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
+/**
+ * Created by phuonghqh on 4/4/15.
+ */
+@Controller
+public class DocusignController {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(DocusignController.class);
+
+  @Value("classpath:docusign-auth.json")
+  private org.springframework.core.io.Resource docusignAuthRes;
+
+  @Value("classpath:docusign-create-envelop.json")
+  private org.springframework.core.io.Resource docusignCreateEnvelopRes;
+
+  @Value("classpath:docusign-view.json")
+  private org.springframework.core.io.Resource docusignViewRes;
+
+  @Value("${docusign.templateName}")
+  private String templateName;
+
+  private static final String BASE_URL = "https://demo.docusign.net/restapi/v2/";
+
+  private static final String BRANDS_URL = BASE_URL + "accounts/%s/brands";
+
+  private static final String TEMPLATE_URL = BASE_URL + "accounts/%s/templates";
+
+  private static final String ENVELOP_URL = BASE_URL + "accounts/%s/envelopes";
+
+  private static final String ENVELOP_RECEIPT_URL = BASE_URL + "accounts/%s/envelopes/%s/recipients?include_tabs=true";
+
+  private static final String EMBEDDED_VIEW_URL = BASE_URL + "accounts/%s/envelopes/%s/views/recipient";
+
+  @RequestMapping("/docusign/complete/{envelopeId}")
+  public void complete(@PathVariable String envelopeId, HttpServletResponse httpResponse) throws IOException, UnirestException {
+    LOGGER.debug("Completed envelopId: {}", envelopeId);
+
+    JsonNode loginInfo = Unirest.get(BASE_URL + "login_information")
+      .header("X-DocuSign-Authentication", getLoginInfoJson())
+      .asJson().getBody();
+    String accountId = loginInfo.getObject().getJSONArray("loginAccounts").getJSONObject(0).getString("accountId");
+    LOGGER.debug("Account id = {}", accountId);
+
+    JsonNode recipients = Unirest.get(String.format(ENVELOP_RECEIPT_URL, accountId, envelopeId))
+      .header("X-DocuSign-Authentication", getLoginInfoJson())
+      .asJson().getBody();
+
+    JSONObject tabsJson = recipients.getObject().getJSONArray("signers").getJSONObject(0).getJSONObject("tabs");
+
+    JSONArray textTabs = tabsJson.getJSONArray("textTabs");
+    for (int i = 0; i < textTabs.length(); i++) {
+      JSONObject textJson = textTabs.getJSONObject(i);
+      LOGGER.debug("TEXT name: {} , value: {}", textJson.getString("name"), textJson.getString("value"));
+      httpResponse.getWriter().write("\n" + "TEXT name: " + textJson.getString("name") + " , value: " + textJson.getString("value"));
+    }
+
+    JSONArray checkboxTabs = tabsJson.getJSONArray("checkboxTabs");
+    for (int i = 0; i < checkboxTabs.length(); i++) {
+      JSONObject checkbox = checkboxTabs.getJSONObject(i);
+      LOGGER.debug("CHECKBOX name: {} , value: {}", checkbox.getString("name"), checkbox.getString("selected"));
+      httpResponse.getWriter().write("\n" + "CHECKBOX name: " + checkbox.getString("name") + " , value: " + checkbox.getString("selected"));
+    }
+  }
+
+  @ResponseBody
+  @RequestMapping("/docusign/createEnvelope")
+  public SocialReqResp createEnvelope() throws IOException, UnirestException {
+    JsonNode loginInfo = Unirest.get(BASE_URL + "login_information")
+      .header("X-DocuSign-Authentication", getLoginInfoJson())
+      .asJson().getBody();
+
+    String accountId = loginInfo.getObject().getJSONArray("loginAccounts").getJSONObject(0).getString("accountId");
+    LOGGER.debug("Account id = {}", accountId);
+
+    String brandId = getRecipientBrandIdDefault(accountId);
+    LOGGER.debug("Brand id = {}", brandId);
+
+    String templateId = getTemplateId(accountId, templateName);
+    LOGGER.debug("Template Name = {} , Template id = {}", templateName, templateId);
+
+    if (templateId != null) {
+      String envelopeId = createEnvelope(accountId, templateId, brandId);
+      LOGGER.debug("EnvelopeId: {}", envelopeId);
+
+      String viewUrl = createEnvelopeView(accountId, envelopeId);
+      LOGGER.debug("viewUrl: {}", viewUrl);
+      return SocialReqResp.SocialReqRespBuilder.socialReqResp().withWidgetUrl(viewUrl).build();
+    }
+    return null;
+  }
+
+  private String createEnvelopeView(String accountId, String envelopeId) throws IOException, UnirestException {
+    JsonNode view = Unirest.post(String.format(EMBEDDED_VIEW_URL, accountId, envelopeId))
+      .header("X-DocuSign-Authentication", getLoginInfoJson())
+      .header("Content-Type", "application/json").header("accept", "application/json")
+      .body(getViewJson(envelopeId)).asJson().getBody();
+    return view.getObject().getString("url");
+  }
+
+  public String getTemplateId(String accountId, String templateName) throws IOException, UnirestException {
+    JSONObject templateInfo = Unirest.get(String.format(TEMPLATE_URL, accountId))
+      .header("X-DocuSign-Authentication", getLoginInfoJson())
+      .asJson().getBody().getObject();
+
+    JSONArray templates = templateInfo.getJSONArray("envelopeTemplates");
+    for (int i = 0; i < templateInfo.getInt("resultSetSize"); i++) {
+      JSONObject template = templates.getJSONObject(0);
+      if (templateName.equals(template.getString("name"))) {
+        return template.getString("templateId");
+      }
+    }
+    return null;
+  }
+
+  public String getRecipientBrandIdDefault(String accountId) throws IOException, UnirestException {
+    JsonNode brandInfo = Unirest.get(String.format(BRANDS_URL, accountId))
+      .header("X-DocuSign-Authentication", getLoginInfoJson())
+      .asJson().getBody();
+    return brandInfo.getObject().getString("recipientBrandIdDefault");
+  }
+
+  public String createEnvelope(String accountId, String templateId, String brandId) throws IOException, UnirestException {
+    String createEnvelope = new String(Files.readAllBytes(Paths.get(docusignCreateEnvelopRes.getURI())));
+    createEnvelope = String.format(createEnvelope, templateId, brandId);
+    JsonNode envelope = Unirest.post(String.format(ENVELOP_URL, accountId))
+      .header("X-DocuSign-Authentication", getLoginInfoJson())
+      .header("Content-Type", "application/json").header("accept", "application/json")
+      .body(createEnvelope).asJson().getBody();
+    String envelopeId = envelope.getObject().getString("envelopeId");
+    return envelopeId;
+  }
+
+  public String getViewJson(String envelopeId) throws IOException {
+    String consoleView = new String(Files.readAllBytes(Paths.get(docusignViewRes.getURI()))).replace("\n", "").replace("\r", "");
+    return String.format(consoleView, envelopeId);
+  }
+
+  public String getLoginInfoJson() throws IOException {
+    return new String(Files.readAllBytes(Paths.get(docusignAuthRes.getURI()))).replace("\n", "").replace("\r", "");
+  }
+}

@@ -68,4 +68,55 @@ public class SocialReqResp {
   public void setToken(String token) {
     this.token = token;
   }
+
+  public static class SocialReqRespBuilder {
+    private SocialReqResp socialReqResp;
+
+    private SocialReqRespBuilder() {
+      socialReqResp = new SocialReqResp();
+    }
+
+    public SocialReqRespBuilder withToken(String token) {
+      socialReqResp.token = token;
+      return this;
+    }
+
+    public SocialReqRespBuilder withClientId(String clientId) {
+      socialReqResp.clientId = clientId;
+      return this;
+    }
+
+    public SocialReqRespBuilder withCode(String code) {
+      socialReqResp.code = code;
+      return this;
+    }
+
+    public SocialReqRespBuilder withRedirectUri(String redirectUri) {
+      socialReqResp.redirectUri = redirectUri;
+      return this;
+    }
+
+    public SocialReqRespBuilder withWidgetUrl(String widgetUrl) {
+      socialReqResp.widgetUrl = widgetUrl;
+      return this;
+    }
+
+    public SocialReqRespBuilder withBaseUrl(String baseUrl) {
+      socialReqResp.baseUrl = baseUrl;
+      return this;
+    }
+
+    public SocialReqRespBuilder withWidgetId(String widgetId) {
+      socialReqResp.widgetId = widgetId;
+      return this;
+    }
+
+    public static SocialReqRespBuilder socialReqResp() {
+      return new SocialReqRespBuilder();
+    }
+
+    public SocialReqResp build() {
+      return socialReqResp;
+    }
+  }
 }

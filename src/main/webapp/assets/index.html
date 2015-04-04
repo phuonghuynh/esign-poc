@@ -7,8 +7,13 @@
 <body ng-app="APP">
 <div ng-view></div>
 <div ng-controller="AppController">
-  <a href="" ng-click="createWidget()" ng-show="widgetUrl === undefined">Create widget</a>
-  <a href="{{widgetUrl}}" ng-show="widgetUrl !== undefined">Sign me</a>
+  <!--<a href="" ng-click="createWidget()" ng-show="widgetUrl === undefined">Create widget</a>-->
+  <!--<a href="{{widgetUrl}}" ng-show="widgetUrl !== undefined">Sign me</a>-->
+  <!--<a href="{{docusignUrl}}">Docusign</a>-->
+  <div style="height: 50px; width: 1px;"></div>
+  <iframe  id="docusign" style="width: 80%; height: 80%;">
+  </iframe>
+
 </div>
 
 <!--<button id="login">Login</button>-->
