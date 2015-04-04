@@ -11,3 +11,10 @@ esign poc app main repository
 > "completed","email","role","first","last","title","company","agreementId","topmostSubform.Page1.f1_1","topmostSubform.Page1.f1_2"
     "2015-03-31 11:43:32","phuonghqh@gmail.com","SIGNER","phuong","Huynh","","","2AAABLblqZhDlCeuFaX58M19rDBprJNQi1ityJGqmWbVGiTEgOu1fC3gQwD7-U-sX17Akp4chPWU*","fd","dfs"
 
+### Dosusign Support
+ - Create a free account at [Docusign Developer](https://www.docusign.com/developer-center)
+ - Create an integration token at [Integration Token](https://admindemo.docusign.com/api-integrator-key)
+ - Update values in `src/main/resources/docusign-auth.json` and `src/main/resources/application.properties`
+ - Create an document template with name at : [Docusign Template](https://appdemo.docusign.com/templates/all)
+ - Consider demo account and production account
+ - Look at console log to see the process
