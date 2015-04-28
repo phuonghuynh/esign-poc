@@ -46,6 +46,7 @@ app.factory("appService", function ($window, $http) {
   var instance = {
     getWidgetUrl: function (token, $scope) {
       $http.post("url", {token: token}).success(function (data) {
+        console.log(data);
         $scope.widgetUrl = data.widgetUrl;
       });
     },
