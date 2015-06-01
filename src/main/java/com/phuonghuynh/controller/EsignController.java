@@ -44,7 +44,7 @@ public class EsignController {
   @ResponseBody
   @RequestMapping({"/auth/esign"})
   public SocialReqResp authentication(@RequestBody SocialReqResp reqResp) throws UnirestException, IOException {
-    MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
+    MultiValueMap<String, String> map = new LinkedMultiValueMap<String, String>();
     map.add("code", reqResp.getCode());
     map.add("client_id", reqResp.getClientId());
     map.add("client_secret", "_FyDcV9W9Iq7p81sDuzQuFCpDItjvMZ4");

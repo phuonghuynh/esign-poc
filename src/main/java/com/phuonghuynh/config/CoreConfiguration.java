@@ -19,10 +19,7 @@ import org.springframework.social.oauth2.OAuth2Template;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Configuration
 @ComponentScan(basePackages = "com.phuonghuynh")
@@ -48,13 +45,11 @@ public class CoreConfiguration {
     JaxWsProxyFactoryBean jaxWsProxyFactoryBean = new JaxWsProxyFactoryBean();
     jaxWsProxyFactoryBean.setServiceClass(TinWebService.class);
     jaxWsProxyFactoryBean.setAddress("https://www.tincheck.com/pvsws/pvsservice.asmx");
-    jaxWsProxyFactoryBean.setInInterceptors(Arrays.asList(new LoggingInInterceptor()));
-    jaxWsProxyFactoryBean.setOutInterceptors(Arrays.asList(new LoggingOutInterceptor()));
 
-    Map<String, Object> values = new HashMap<>();
+    Map<String, Object> values = new HashMap<String, Object>();
     values.put("pvs", "http://www.TinCheck.com/WebServices/PVSService/");
     values.put("soapenv", "http://schemas.xmlsoap.org/soap/envelope/");
-    Map<String, Object> properties = new HashMap<>();
+    Map<String, Object> properties = new HashMap<String, Object>();
     properties.put("soap.env.ns.map", values);
     properties.put("disable.outputstream.optimization", true);
     jaxWsProxyFactoryBean.setProperties(properties);
