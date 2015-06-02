@@ -6,6 +6,9 @@ import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import com.phuonghuynh.dto.SocialReqResp;
 import com.phuonghuynh.service.TinCheckService;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.CharSet;
+import org.apache.commons.lang3.CharSetUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -15,12 +18,12 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
+import sun.nio.cs.StandardCharsets;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.charset.Charset;
 
 /**
  * Created by phuonghqh on 4/4/15.
@@ -172,7 +175,7 @@ public class DocusignController {
   }
 
   public String createEnvelope(String accountId, String templateId, String brandId) throws IOException, UnirestException {
-    String createEnvelope = new String(Files.readAllBytes(Paths.get(docusignCreateEnvelopRes.getURI())));
+    String createEnvelope = FileUtils.readFileToString(docusignCreateEnvelopRes.getFile(), Charset.forName("UTF-8")) ;//new String(Files.readAllBytes(Paths.get(docusignCreateEnvelopRes.getURI())));
     createEnvelope = String.format(createEnvelope, templateId, brandId);
     JsonNode envelope = Unirest.post(String.format(ENVELOP_URL, accountId))
       .header("X-DocuSign-Authentication", getLoginInfoJson())
@@ -183,11 +186,11 @@ public class DocusignController {
   }
 
   public String getViewJson(String envelopeId) throws IOException {
-    String consoleView = new String(Files.readAllBytes(Paths.get(docusignViewRes.getURI()))).replace("\n", "").replace("\r", "");
+    String consoleView = FileUtils.readFileToString(docusignViewRes.getFile(), Charset.forName("UTF-8"));//new String(Files.readAllBytes(Paths.get(docusignViewRes.getURI()))).replace("\n", "").replace("\r", "");
     return String.format(consoleView, envelopeId);
   }
 
   public String getLoginInfoJson() throws IOException {
-    return new String(Files.readAllBytes(Paths.get(docusignAuthRes.getURI()))).replace("\n", "").replace("\r", "");
+    return FileUtils.readFileToString(docusignAuthRes.getFile(), Charset.forName("UTF-8")).replace("\n", "").replace("\r", ""); //new String(Files.readAllBytes(Paths.get(docusignAuthRes.getURI())))
   }
 }

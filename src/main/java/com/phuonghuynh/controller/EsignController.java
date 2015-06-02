@@ -4,6 +4,7 @@ import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import com.phuonghuynh.dto.SocialReqResp;
+import org.apache.commons.io.FileUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
@@ -25,9 +26,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.charset.Charset;
 
 /**
  * Created by phuonghqh on 3/31/15.
@@ -67,7 +66,7 @@ public class EsignController {
     socialReqResp.setBaseUrl(baseUrl);
     httpSession.setAttribute("socialReqResp", socialReqResp);
 
-    JsonNode wgJson = new JsonNode(new String(Files.readAllBytes(Paths.get(createWidgetRes.getURI()))));
+    JsonNode wgJson = new JsonNode(FileUtils.readFileToString(createWidgetRes.getFile(), Charset.forName("UTF-8")));//new String(Files.readAllBytes(Paths.get(createWidgetRes.getURI()))));
     JsonNode wgCreateJson = Unirest.post(baseUrl + "/api/rest/v3/widgets")
       .header("Access-Token", socialReqResp.getToken()).header("Content-Type", "application/json").header("accept", "application/json")
       .body(wgJson.toString()).asJson().getBody();

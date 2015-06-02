@@ -18,7 +18,7 @@ import org.springframework.social.oauth2.OAuth2Template;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
+import java.nio.charset.Charset;
 import java.util.*;
 
 @Configuration
@@ -67,16 +67,16 @@ public class CoreConfiguration {
     List<Integer> resultOKs = Arrays.asList(1, 6, 7, 8);
     File tinResultFile = new File("tinResult.csv");
     tinResultFile.delete();
-    Files.append("Payee,Tax ID (SSN),Response Code,Result\n", tinResultFile, StandardCharsets.UTF_8);
+    Files.append("Payee,Tax ID (SSN),Response Code,Result\n", tinResultFile, Charset.forName("UTF-8"));
 
     CSVParser parser = CSVParser.parse(new File("src/main/resources/TIN Payee and Address Validations.csv"),
-      StandardCharsets.UTF_8, CSVFormat.EXCEL);
+            Charset.forName("UTF-8"), CSVFormat.EXCEL);
     for (CSVRecord csvRecord : parser) {
       TinName tinName = TinName.TinNameBuilder.tinName().withTin(csvRecord.get(1).replaceAll("-", "")).withName(csvRecord.get(0)).build();
       ValidateTinNameResult result = ws.validateTinName(tinName, wsUser);
       Files.append(String.format("%s,%s,%s,%s\n", csvRecord.get(0).indexOf(",") >= 0 ? String.format("\"%s\"", csvRecord.get(0)) : csvRecord.get(0), csvRecord.get(1),
           result.getTinNameCode(), resultOKs.contains(result.getTinNameCode())),
-        tinResultFile, StandardCharsets.UTF_8);
+        tinResultFile, Charset.forName("UTF-8"));
     }
 
     //    String json = FileUtils.readFileToString(new File("src/main/resources/abc.json"), "UTF-8");;// Files.toString(new java.io.File("/home/x1/text.log"), Charsets.UTF_8);// StringReader(Main.class.getResourceAsStream("abc.json"));
